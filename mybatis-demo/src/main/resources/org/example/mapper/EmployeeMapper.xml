@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.EmployeeMapper">
+    <resultMap id="BaseEmployee" type="Employee">
+        <!--
+        1. 这里如果报错，只是代表后面的SQL语句中没有使用到定义的变量，并不会产生实际影响
+        2. 这里只是定义变量映射，实际查找哪些变量取决于SQL语句中的返回值。SQL语句中没有使用到resultMap中定义的变量，会设置为null
+        3. association：属性是一个对象
+           collection：属性是一个集合
+        -->
+        <id property="id" column="eId"/>
+        <result property="name" column="employeeName"/>
+        <result property="age" column="employeeAge"/>
+    </resultMap>
+
+    <select id="queryBaseEmployeeById" resultMap="BaseEmployee">
+        SELECT id eId, name employeeName, age employeeAge
+        FROM `employee` e
+        WHERE e.id = #{id}
+    </select>
+
+    <!--用于测试当SQL查询结果集中的字段超过resultMap设置的映射字段时,会产生什么现象? 报错还是抛弃。测试结果是抛弃结果集中多余字段-->
+    <select id="queryBaseEmployeeOverFlowById" resultMap="BaseEmployee">
+        SELECT e.name employeeName,
+               d.name deptName
+        FROM employee e,
+             dept d
+        WHERE e.dept_id = d.id
+          AND e.id = #{id}
+    </select>
+
+
+    <!--resultMap的作用是为SQL语句的查询结果集（别名）和Java实体类之间提供映射关系表。
+    即以column为key，以type.property为value进行映射
+    id表示索引, result表示普通列
+    column表示SQL语句查询结果集中的字段名
+    property表示对应的Java实体类中的属性名
+    -->
+
+    <resultMap id="DeptEmployee" type="Employee">
+        <!--
+        多表查询：按照结果嵌套处理（联表查询方式）
+        -->
+        <id property="id" column="eId"/>
+        <result property="name" column="employeeName"/>
+        <result property="age" column="employeeAge"/>
+        <association property="dept" javaType="org.example.entities.Dept">
+            <!---->
+            <id property="id" column="deptId"/>
+            <result property="name" column="deptName"/>
+        </association>
+    </resultMap>
+
+    <select id="queryDeptEmployeeById" resultMap="DeptEmployee">
+        SELECT e.id   eId,
+               e.name employeeName,
+               e.age  employeeAge,
+               d.id   deptId,
+               d.name deptName
+        FROM `employee` e,
+             `dept` d
+        WHERE e.id = #{id}
+          AND e.dept_id = d.id
+    </select>
+
+
+    <resultMap id="DeptEmployeeWithSubQuery" type="Employee">
+        <!--
+        多表查询：按照查询嵌套处理（子查询方式）
+        -->
+        <id property="id" column="eId"/>
+        <result property="name" column="employeeName"/>
+        <result property="age" column="employeeAge"/>
+
+        <!--
+        select: 引用其它mapper.xml中的SQL语句，即其它命名空间中的SQL
+        column: 一般是外键, 从当前表中查询出来的字段dept_id会传给select这条SQL来查询出Dept对应的结果集, 然后将第二条SQL的查询结果用于为property属性(dept)进行赋值
+        -->
+        <association property="dept" javaType="org.example.entities.Dept"
+                     column="deptId" select="org.example.mapper.DeptMapper.queryById">
+            <id property="id" column="deptId"/>
+        </association>
+    </resultMap>
+    <select id="queryDeptEmployeeByIdWithSubQuery" resultMap="DeptEmployeeWithSubQuery">
+        SELECT e.id      eId,
+               e.name    employeeName,
+               e.age     employeeAge,
+               e.dept_id deptId
+        FROM `employee` e
+        WHERE e.id = #{id};
+    </select>
+</mapper>

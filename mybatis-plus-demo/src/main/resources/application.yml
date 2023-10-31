@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    # DriverClass（驱动类）和导入的Java连接池相关
+    # 如果导入druid，那么这里使用druid连接池jar包的驱动类
+    # 当前使用的是mysql-connect-java这个jar包，com.mysql.cj.jdbc.Driver也正是这个jar包中定义的类
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 连接的基本信息：连接地址、用户名、密码
+    url: jdbc:mysql://localhost:3306/mybatis?serverTimezone=GMT%2B8
+    username: root
+    password: root
+  main:
+    # 隐藏日志中springboot的banner
+    banner-mode: off
+
+# 用于打印Mybatis中的日志信息
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    # 隐藏日志中mybatisplus的banner
+    banner: false
+    db-config:
+      # 对所有的实体类生效，优先级不如@TableId
+      id-type: auto

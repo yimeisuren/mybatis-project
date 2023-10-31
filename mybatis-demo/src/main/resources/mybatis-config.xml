@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!--原本所有的配置全部写在核心配置文件中，现在通过分模块，一个模块一个properties文件，然后再引入到核心配置文件当中。疑问：这里并不能够写多个properties标签，如果想要引入多个properties文件该如何实现呢？-->
+    <!--    <properties>-->
+    <!--        &lt;!&ndash;声明键值对，供后面引用&ndash;&gt;-->
+    <!--        <property name="jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>-->
+    <!--        <property name="jdbc.url" value="jdbc:mysql://localhost:3306/mybatis"/>-->
+    <!--        <property name="jdbc.username" value="root"/>-->
+    <!--        <property name="jdbc.password" value="root"/>-->
+    <!--    </properties>-->
+    <!--如果一个属性在不只一个地方进行了配置，那么，MyBatis 将按照下面的顺序来加载：
+    首先读取在 properties 元素体内指定的属性。（优先级最低）
+    然后根据 properties 元素中的 resource 属性读取类路径下属性文件，或根据 url 属性指定的路径读取属性文件，并覆盖之前读取过的同名属性。
+    最后读取作为方法参数传递的属性，并覆盖之前读取过的同名属性。（优先级最高，对应build方法中传入Properties对象）-->
+    <properties resource="jdbc.properties"/>
+
+    <!--如何查看setting对应的Java对象呢？为什么要查看？因为这里的值不知道。解决方法之一可以查看官方文档，不一定要什么都看源码-->
+    <settings>
+        <!--数据库表和Java对象的驼峰命名转换-->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <!--懒加载-->
+        <setting name="lazyLoadingEnabled" value="true"/>
+        <!--缓存-->
+        <setting name="cacheEnabled" value="false"/>
+    </settings>
+
+    <!--目前感觉别名不大行-->
+    <typeAliases>
+        <!--类型全名不区分大小写，
+                    type称为全类名，实际上Java之后对应的路径，
+                    alis称为别名，实际上每个全类名都会有一个默认的别名，即类名-->
+        <!--<typeAlias type="org.example.entities.User" alias="User"/>-->
+        <!--常用： 以包为单位，设置类型别名，相当于上面方式的简化-->
+        <package name="org.example.entities"/>
+    </typeAliases>
+
+    <!--配置连接数据库的环境-->
+    <environments default="development">
+        <!-- 环境方案一，相当于可以提供多套方案，可以通过上面的default的值修改使用的环境-->
+        <environment id="development">
+            <!--事务管理方式：JDBC-->
+            <transactionManager type="JDBC"/>
+            <!--数据源，POOLED表示池化的，即使用数据库连接池；而UNPOOLED表示非池化的，即不使用数据库连接池-->
+            <dataSource type="POOLED">
+                <!--如下信息中${...}表示properties配置文件中定义的变量-->
+                <property name="driver" value="${jdbc.drive}"/>
+                <property name="url" value="${jdbc.url}"/>
+                <property name="username" value="${jdbc.username}"/>
+                <property name="password" value="${jdbc.password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+
+    <!--引入映射文件-->
+    <mappers>
+        <!-- <mapper resource="org/example/mapper/UserMapper.xml"/>-->
+        <!-- 以包为单位引入配置文件
+             额外条件：
+             分别以java和resources作为起始地址，Mapper接口类和Mapper.xml映射文件需要在保持一致
+             java/org/example/mapper/UserMapper.java<-> resources/org/example/mapper/UserMapper.xml
+        -->
+        <package name="org.example.mapper"/>
+    </mappers>
+</configuration>
